@@ -1,31 +1,197 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.13.35825.156 d17.13
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test.Course5", "Test.Course5\Test.Course5.vcxproj", "{0B66ED1D-146C-4D47-8CE3-2C7587C44886}"
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0B66ED1D-146C-4D47-8CE3-2C7587C44886}.Debug|x64.ActiveCfg = Debug|x64
-		{0B66ED1D-146C-4D47-8CE3-2C7587C44886}.Debug|x64.Build.0 = Debug|x64
-		{0B66ED1D-146C-4D47-8CE3-2C7587C44886}.Debug|x86.ActiveCfg = Debug|Win32
-		{0B66ED1D-146C-4D47-8CE3-2C7587C44886}.Debug|x86.Build.0 = Debug|Win32
-		{0B66ED1D-146C-4D47-8CE3-2C7587C44886}.Release|x64.ActiveCfg = Release|x64
-		{0B66ED1D-146C-4D47-8CE3-2C7587C44886}.Release|x64.Build.0 = Release|x64
-		{0B66ED1D-146C-4D47-8CE3-2C7587C44886}.Release|x86.ActiveCfg = Release|Win32
-		{0B66ED1D-146C-4D47-8CE3-2C7587C44886}.Release|x86.Build.0 = Release|Win32
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {C9E74EC3-B0F8-4B6C-83B2-120B201B331C}
-	EndGlobalSection
-EndGlobal
+﻿#include <iostream>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+enum enQuestionLevel { EasyLevel = 1, MidLevel = 2, HardLevel = 3, Mix = 4 };
+enum enOperationType { Add = 1, Sub = 2, Mult = 3, Div = 4, MixOp = 5 };
+
+int RandomNumber(int From, int To)
+{
+	return rand() % (To - From + 1) + From;
+}
+string GetOpTypeSymbol(enOperationType OpType)
+{
+	switch (OpType)
+	{
+	case enOperationType::Add:
+		return "+";
+	case enOperationType::Sub:
+		return "-";
+	case enOperationType::Mult:
+		return "*";
+	case enOperationType::Div:
+		return "/";
+	default:
+		return "Mix";
+	}
+}
+
+
+enOperationType GetRandomOperationType()
+{
+	return (enOperationType)RandomNumber(1, 4);
+}
+
+string GetQuestionLevelText(enQuestionLevel QuestionLevel)
+{
+	string arrQuestionLevelText[4] = { "Easy" , "Medium" , "Hard" , "Mixed" };
+	return arrQuestionLevelText[QuestionLevel - 1];
+}
+
+
+void SetScreenColor(bool Right)
+{
+	if (Right)
+		system("color 2f");
+	else
+	{
+		system("color 4f");
+		cout << "\a";
+	}
+
+}
+
+int SimpleCalculater(int Number1, int Number2, enOperationType OpType)
+{
+	switch (OpType)
+	{
+	case enOperationType::Add:
+		return Number1 + Number2;
+	case enOperationType::Sub:
+		return Number1 - Number2;
+	case enOperationType::Mult:
+		return Number1 * Number2;
+	case enOperationType::Div:
+		return  (Number2 != 0) ? (Number1 / Number2) : 0;
+	default:
+		return Number1 + Number2;
+
+
+	}
+
+
+}
+struct stQuestion
+{
+	int Number1 = 0;
+	int Number2 = 0;
+	enOperationType OperationType;
+	enQuestionLevel QuestionLevel;
+	int CorrectAnswer = 0;
+	int PlayerAnswer = 0;
+	bool AnswerResult = false;
+
+};
+
+struct stQuizz
+{
+	stQuestion QuestionList[100];
+	short NumberOfQuestions;
+	enQuestionLevel QuestionLevel;
+	enOperationType OpType;
+	short NumberOfRightAnswers = 0;
+	short NumberOfWrongAnswers = 0;
+	bool isPass = false;
+
+};
+
+
+
+stQuestion GenerateQuestion(enQuestionLevel QuestionLevel, enOperationType OpType)
+{
+	stQuestion Question;
+	if (QuestionLevel == enQuestionLevel::Mix)
+		QuestionLevel = (enQuestionLevel)RandomNumber(1, 3);
+
+	if (OpType = enOperationType::MixOp)
+		OpType = GetRandomOperationType();
+	Question.OperationType = OpType;
+
+
+	switch (QuestionLevel)
+	{
+	case enQuestionLevel::EasyLevel:
+		Question.Number1 = RandomNumber(1, 10);
+		Question.Number2 = RandomNumber(1, 10);
+		break;
+	case enQuestionLevel::MidLevel:
+		Question.Number1 = RandomNumber(10, 50);
+		Question.Number2 = RandomNumber(10, 50);
+		break;
+	case enQuestionLevel::HardLevel:
+		Question.Number1 = RandomNumber(50, 100);
+		Question.Number2 = RandomNumber(50, 100);
+		break;
+
+	}
+
+	Question.CorrectAnswer = SimpleCalculater(Question.Number1, Question.Number2, Question.OperationType);
+	Question.QuestionLevel = QuestionLevel;
+
+	return Question;
+}
+
+
+void AskAndCorrectQuestionListAnswers(stQuizz& Quizz)
+{
+	for (short QuestionNumber = 0; QuestionNumber < Quizz.NumberOfQuestions; QuestionNumber++)
+	{
+		cout << "\n Question [" << QuestionNumber + 1 << "/" << Quizz.NumberOfQuestions << "]\n";
+		cout << Quizz.QuestionList[QuestionNumber].Number1 << " "
+			<< GetOpTypeSymbol(Quizz.QuestionList[QuestionNumber].OperationType) << " "
+			<< Quizz.QuestionList[QuestionNumber].Number2 << "=";
+
+		cin >> Quizz.QuestionList[QuestionNumber].PlayerAnswer;
+
+		if (Quizz.QuestionList[QuestionNumber].PlayerAnswer == Quizz.QuestionList[QuestionNumber].CorrectAnswer)
+		{
+			cout << "Correct Answer ";
+			Quizz.NumberOfRightAnswers++;
+		}
+		else
+		{
+			cout << "Wrong ! Correct answer is :" << Quizz.QuestionList[QuestionNumber].CorrectAnswer << endl;
+			Quizz.NumberOfWrongAnswers++;
+		}
+
+
+	}
+
+	Quizz.isPass = (Quizz.NumberOfRightAnswers >= Quizz.NumberOfWrongAnswers);
+
+
+
+}
+
+void PlayMathGame()
+{
+	stQuizz Quizz;
+	Quizz.NumberOfQuestions = 5;
+	Quizz.QuestionLevel = enQuestionLevel::EasyLevel;
+	Quizz.OpType = enOperationType::MixOp;
+
+	for (short QuestionNumber = 0; QuestionNumber < Quizz.NumberOfQuestions; QuestionNumber++)
+	{
+		Quizz.QuestionList[QuestionNumber] = GenerateQuestion(Quizz.QuestionLevel, Quizz.OpType);
+	}
+
+	AskAndCorrectQuestionListAnswers(Quizz);
+	cout << "\n Quizz completed . right answers : " << Quizz.NumberOfRightAnswers << "\n wrong answers :" << Quizz.NumberOfWrongAnswers << endl;
+
+	cout << (Quizz.isPass ? "passed the quizz" : "failsed the quizz");
+
+
+
+}
+int main()
+{
+	srand((unsigned)time(NULL));
+	PlayMathGame();
+	return 0;
+
+
+
+}
+
+
